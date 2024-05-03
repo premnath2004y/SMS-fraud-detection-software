@@ -1,0 +1,44 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import accuracy_score, confusion_matrix
+# Load data
+df = pd.read_table('/Users/prem/Downloads/sms+spam+collection/SMSSpamCollection')
+df.head()
+# Train-test split
+x_train, x_test, y_train, y_test = train_test_split(df["sms_message"], df["label"], random_state=1)
+# Count Vectorizer
+count_vector = CountVectorizer()
+train = count_vector.fit_transform(x_train)
+test = count_vector.transform(x_test)
+# Naive Bayes Model
+naive_bayes = MultinomialNB()
+naive_bayes.fit(train, y_train)
+predictions = naive_bayes.predict(test)
+# Accuracy
+accuracy = accuracy_score(y_test, predictions)
+print(f"Accuracy: {accuracy:.2%}")
+#Confusion Matrix
+cm = confusion_matrix(y_test, predictions)
+sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", cbar=False, xticklabels=["Ham", "Spam"], yticklabels=["Ham", "Spam"])
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.title('Confusion Matrix')
+plt.show()
+# Bar chart showing the distribution of predicted labels
+sns.countplot(x=predictions, palette="viridis")
+plt.xlabel('Predicted Label')
+plt.ylabel('Count')
+plt.title('Distribution of Predicted Labels')
+plt.show()
+# Predict user input
+sms = input("Enter SMS message Received: ")
+predict_sms = naive_bayes.predict(count_vector.transform([sms]))
+print(predict_sms[0])
+if predict_sms[0] == 0:
+    print("Message is ham")
+else:
+    print("Message is spam")
